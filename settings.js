@@ -1,4 +1,4 @@
-exports.url = 'https://opt-in-test.herokuapp.com';
+exports.url = 'https://localhost:3090';
 exports.senderEmail = "sender@example.com";
 exports.senderName = "Example Sender";
 exports.listID = 348282;
