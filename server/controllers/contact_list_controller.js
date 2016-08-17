@@ -6,6 +6,8 @@ const optIn = 'opt-in';
 // Send confirmation email to contact with link to confirm email
 exports.sendConfirmation = function(req, res, next) {
 	const email = req.body.email;
+	const firstName = req.body.firstName;
+	const lastName = req.body.lastName;
 
 	var helper = require('sendgrid').mail;
 	mail = new helper.Mail()
@@ -27,6 +29,16 @@ exports.sendConfirmation = function(req, res, next) {
 	to_email = new helper.Email(email);
 	personalization.addTo(to_email)
 	
+	// Add firstName custom arg personalization
+	custom_arg = new helper.CustomArgs("firstName", firstName);
+	personalization.addCustomArg(custom_arg);
+	mail.addPersonalization(personalization);		
+	
+	// Add lastName custom arg personalization
+	custom_arg = new helper.CustomArgs("lastName", lastName);
+	personalization.addCustomArg(custom_arg);
+	mail.addPersonalization(personalization);	
+
 	// Add optIn type custom arg personalization
 	custom_arg = new helper.CustomArgs("type", optIn);
 	personalization.addCustomArg(custom_arg);
@@ -48,13 +60,15 @@ exports.sendConfirmation = function(req, res, next) {
 		console.log(response.body);
 		console.log(response.headers);
 
-		res.sendFile(path.join(__dirname, '../static/check-inbox.html'))	;
+		res.sendFile(path.join(__dirname, '../static/check-inbox.html'));
 	});
 }
 
 // Create new contact and add contact to given list
 exports.addUser = function(req, res, next) {
 	const email = req.body[0].email;
+	const firstName = req.body[0].firstName;
+	const lastName = req.body[0].lastName;
 	const emailType = req.body[0].type;
 	const timestamp = parseInt(req.body[0].time_sent);
 	const listID = Settings.listID;
@@ -65,7 +79,11 @@ exports.addUser = function(req, res, next) {
 	if (emailType == optIn && timeElapsed < secondsInDay) {
 		// Create new contact
 		var request = sg.emptyRequest();
-		request.body = [{ "email": email }];
+		request.body = [{ 
+			"email": email,
+			"first_name": firstName,
+			"last_name": lastName, 
+		}];
 		request.method = 'POST';
 		request.path = '/v3/contactdb/recipients';
 		sg.API(request, function (response) {
